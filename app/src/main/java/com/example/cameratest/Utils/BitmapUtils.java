@@ -65,7 +65,7 @@ public class BitmapUtils {
         Cursor cursor = context.getContentResolver().query(uri,filePathColumn,null,null,null);
         cursor.moveToFirst();
         int columnIndex =cursor.getColumnIndex(filePathColumn[0]);
-        String picturePath = cursor.getString(columnIndex);
+        String picturePath = cursor.getString(columnIndex);//得到圖片路徑
         cursor.close();
 
         //寫一個方法，傳入圖片的路徑
@@ -75,7 +75,7 @@ public class BitmapUtils {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds= true;//拿到大圖後，先進行縮放
         BitmapFactory.decodeFile(picturePath,options);
-        options.inSampleSize = calculateInSampleSize(options,width,height);
+        options.inSampleSize = calculateInSampleSize(options,width,height);//恰當的inSampleSize可以使BitmapFactory分配更少的空間
         options.inJustDecodeBounds = false;
 
         //設置圖片旋轉matrix

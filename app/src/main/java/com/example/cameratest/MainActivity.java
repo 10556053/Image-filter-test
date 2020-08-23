@@ -3,6 +3,7 @@ package com.example.cameratest;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.viewpager.widget.ViewPager;
 
@@ -39,15 +40,21 @@ import com.zomato.photofilters.imageprocessors.subfilters.SaturationSubfilter;
 import java.io.IOException;
 import java.util.List;
 
+import ja.burhanrashid52.photoeditor.PhotoEditor;
+import ja.burhanrashid52.photoeditor.PhotoEditorView;
+
 public class MainActivity extends AppCompatActivity implements FilterListFragmentListener , EditImageFragmentListener {
     public static String pictureName = "flash.jpg";
     public static final int PERMISSION_PICK_IMAGE =1000;
 
-    ImageView img_preview;
-    TabLayout tabLayout;
-    ViewPager viewPager;
+    PhotoEditorView photoEditorView;
+    PhotoEditor photoEditor;
+//    TabLayout tabLayout;
+//    ViewPager viewPager;
 
     CoordinatorLayout coordinatorLayout;
+
+    CardView btn_filters_list,btn_edit;
 
     Bitmap originalBitmap,filteredBitmap,finalBitmap;
 
@@ -72,14 +79,36 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("MY FILTER");
 
-        img_preview = findViewById(R.id.image_preview);
-        tabLayout = findViewById(R.id.tabs);
-        viewPager = findViewById(R.id.viewpager);
+        photoEditorView = findViewById(R.id.image_preview);
+        photoEditor = new PhotoEditor.Builder(this,photoEditorView).setPinchTextScalable(true).build();
+//        tabLayout = findViewById(R.id.tabs);
+//        viewPager = findViewById(R.id.viewpager);
         coordinatorLayout = findViewById(R.id.coordinator);
+        btn_filters_list = findViewById(R.id.btn_filters_list);
+        btn_edit = findViewById(R.id.btn_edit);
+
+        btn_filters_list.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //create singleton object
+                FilterListFragment filterListFragment = FilterListFragment.getInstance();
+                filterListFragment.setListener(MainActivity.this);
+                filterListFragment.show(getSupportFragmentManager(),filterListFragment.getTag());
+            }
+        });
+
+        btn_edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditImageFragment editImageFragment = EditImageFragment.getInstance();
+                editImageFragment.setListener(MainActivity.this);
+                editImageFragment.show(getSupportFragmentManager(),editImageFragment.getTag());
+            }
+        });
 
         loadImage();
-        setUpViewPager(viewPager);
-        tabLayout.setupWithViewPager(viewPager);
+//        setUpViewPager(viewPager);
+//        tabLayout.setupWithViewPager(viewPager);
     }
 
     private void loadImage() {
@@ -87,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         filteredBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888,true);
         finalBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888,true);
 
-        img_preview.setImageBitmap(originalBitmap);
+        photoEditorView.getSource().setImageBitmap(originalBitmap);
     }
 
     private void setUpViewPager(ViewPager viewPager) {
@@ -108,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
     public void onFilterSelected(Filter filter) {
         resetControl();
         filteredBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888,true);
-        img_preview.setImageBitmap(filter.processFilter(filteredBitmap));
+        photoEditorView.getSource().setImageBitmap(filter.processFilter(filteredBitmap));
         finalBitmap =filteredBitmap.copy(Bitmap.Config.ARGB_8888,true);
     }
 
@@ -127,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         brightnessFinal = brightness;
         Filter myFilter = new Filter();
         myFilter.addSubFilter(new BrightnessSubFilter(brightness));
-        img_preview.setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
+        photoEditorView.getSource().setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
     }
 
     @Override
@@ -135,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         saturationFinal = saturation;
         Filter myFilter = new Filter();
         myFilter.addSubFilter(new SaturationSubfilter(saturation));
-        img_preview.setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
+        photoEditorView.getSource().setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
     }
 
     @Override
@@ -143,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         constraintFinal = constraint;
         Filter myFilter = new Filter();
         myFilter.addSubFilter(new ContrastSubFilter(constraint));
-        img_preview.setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
+        photoEditorView.getSource().setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
     }
 
     @Override
@@ -275,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
             filteredBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);
 
 
-            img_preview.setImageBitmap(originalBitmap);
+            photoEditorView.getSource().setImageBitmap(originalBitmap);
             bitmap.recycle();
 
             //render selected image thumbnail
