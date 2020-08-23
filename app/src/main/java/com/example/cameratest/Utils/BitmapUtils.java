@@ -15,8 +15,10 @@ import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,6 +27,7 @@ import java.io.OutputStream;
 
 //https://gist.github.com/agustinsivoplas/44f01672d698394dc28edda2c7a05cb6
 public class BitmapUtils {
+
 
     //added===========
     public static Bitmap getBitmapFromAssets(Context context ,String filename, int width ,int height){
@@ -58,11 +61,16 @@ public class BitmapUtils {
     //added===========
     public static Bitmap getBitMapFromGallery(Context context , Uri uri, int width , int height){
         String[] filePathColumn = {MediaStore.Images.Media.DATA};
+        //Query the given URI, returning a Cursor over the result set.
         Cursor cursor = context.getContentResolver().query(uri,filePathColumn,null,null,null);
         cursor.moveToFirst();
         int columnIndex =cursor.getColumnIndex(filePathColumn[0]);
         String picturePath = cursor.getString(columnIndex);
         cursor.close();
+
+        //寫一個方法，傳入圖片的路徑
+        int degree =readDegree(picturePath);
+        Log.e("rotation ",degree+"");
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds= true;//拿到大圖後，先進行縮放
@@ -70,7 +78,40 @@ public class BitmapUtils {
         options.inSampleSize = calculateInSampleSize(options,width,height);
         options.inJustDecodeBounds = false;
 
-        return BitmapFactory.decodeFile(picturePath,options);
+        //設置圖片旋轉matrix
+        Matrix matrix = new Matrix();
+        matrix.setRotate(degree);
+        Bitmap imageBitmap = BitmapFactory.decodeFile(picturePath,options);
+        //創造bitmap
+        Bitmap fixedBitmap = Bitmap.createBitmap(imageBitmap,0,0,imageBitmap.getWidth(),imageBitmap.getHeight(),matrix,false);
+
+        return fixedBitmap;
+    }
+
+    //解決有些照片會自甕旋轉90度
+    private static int readDegree(String path) {
+
+        int degree  = 0;
+        try {
+            //取的路徑圖片的資訊(旋轉角度)
+            ExifInterface exifInterface = new ExifInterface(path);
+            int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    degree = 90;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    degree = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    degree = 270;
+                    break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return degree;
     }
 
 

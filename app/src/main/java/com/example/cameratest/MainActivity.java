@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.cameratest.Adapter.ViewPagerAdapter;
 import com.example.cameratest.Interface.EditImageFragmentListener;
 import com.example.cameratest.Interface.FilterListFragmentListener;
@@ -272,6 +273,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
             originalBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
             finalBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);
             filteredBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);
+
 
             img_preview.setImageBitmap(originalBitmap);
             bitmap.recycle();
