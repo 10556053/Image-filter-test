@@ -10,6 +10,7 @@ import androidx.viewpager.widget.ViewPager;
 import android.Manifest;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -23,6 +24,7 @@ import com.bumptech.glide.Glide;
 import com.example.cameratest.Adapter.ViewPagerAdapter;
 import com.example.cameratest.Interface.BrushFragmentListener;
 import com.example.cameratest.Interface.EditImageFragmentListener;
+import com.example.cameratest.Interface.EmojiFragmentListener;
 import com.example.cameratest.Interface.FilterListFragmentListener;
 import com.example.cameratest.Utils.BitmapUtils;
 import com.google.android.material.snackbar.Snackbar;
@@ -45,7 +47,7 @@ import ja.burhanrashid52.photoeditor.OnSaveBitmap;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
 
-public class MainActivity extends AppCompatActivity implements FilterListFragmentListener, EditImageFragmentListener, BrushFragmentListener {
+public class MainActivity extends AppCompatActivity implements FilterListFragmentListener, EditImageFragmentListener, BrushFragmentListener , EmojiFragmentListener {
     public static String pictureName = "flash.jpg";
     public static final int PERMISSION_PICK_IMAGE =1000;
 
@@ -56,7 +58,9 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
     CoordinatorLayout coordinatorLayout;
 
-    CardView btn_filters_list,btn_edit,btn_brush;
+    CardView btn_filters_list,btn_edit,btn_brush,btn_emoji;
+
+    ImageView btn_undo,btn_redo;
 
     Bitmap originalBitmap,filteredBitmap,finalBitmap;
 
@@ -66,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
     int brightnessFinal = 0;
     float saturationFinal = 1.0f;
     float constraintFinal = 1.0f;
+
+    EmojiFragment emojiFragment;
 
     static {
         System.loadLibrary("NativeImageProcessor");
@@ -82,13 +88,20 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         getSupportActionBar().setTitle("MY FILTER");
 
         photoEditorView = findViewById(R.id.image_preview);
-        photoEditor = new PhotoEditor.Builder(this,photoEditorView).setPinchTextScalable(true).build();
+        photoEditor = new PhotoEditor.Builder(this,photoEditorView)
+                .setPinchTextScalable(true)
+                .setDefaultEmojiTypeface(Typeface.createFromAsset(getAssets(),"emojione-android.ttf"))
+                .build();
 //        tabLayout = findViewById(R.id.tabs);
 //        viewPager = findViewById(R.id.viewpager);
         coordinatorLayout = findViewById(R.id.coordinator);
         btn_filters_list = findViewById(R.id.btn_filters_list);
         btn_edit = findViewById(R.id.btn_edit);
         btn_brush = findViewById(R.id.btn_brush);
+        btn_emoji = findViewById(R.id.btn_emoji);
+
+        btn_undo = findViewById(R.id.btn_undo);
+        btn_redo = findViewById(R.id.btn_redo);
 
         //=======================bottom cardview onclick============================================//
 
@@ -125,8 +138,32 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
                 brushFragment.show(getSupportFragmentManager(),brushFragment.getTag());
             }
         });
+        btn_emoji.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                emojiFragment = EmojiFragment.getInstance();
+                //emojiFragment等待MainActivity實作EmojiFragmentListener
+                emojiFragment.setListener(MainActivity.this);
+                emojiFragment.show(getSupportFragmentManager(),emojiFragment.getTag());
+            }
+        });
+
+
         //=======================first time load image into PhotoEditorView=========================//
         loadImage();
+        //btn undo,redo=====================================
+        btn_undo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                photoEditor.undo();
+            }
+        });
+        btn_redo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                photoEditor.redo();
+            }
+        });
 
     }
     //=======================first time load image into PhotoEditorView=========================//
@@ -370,5 +407,11 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         }else{
             photoEditor.setBrushDrawingMode(true);
         }
+    }
+    //===================methods from EmojiFragmentListener =======================================//
+    @Override
+    public void onEmojiSelected(String emoji) {
+        photoEditor.addEmoji(emoji);
+        emojiFragment.dismiss();
     }
 }
