@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.cameratest.Adapter.ViewPagerAdapter;
+import com.example.cameratest.Interface.BrushFragmentListener;
 import com.example.cameratest.Interface.EditImageFragmentListener;
 import com.example.cameratest.Interface.FilterListFragmentListener;
 import com.example.cameratest.Utils.BitmapUtils;
@@ -40,10 +41,11 @@ import com.zomato.photofilters.imageprocessors.subfilters.SaturationSubfilter;
 import java.io.IOException;
 import java.util.List;
 
+import ja.burhanrashid52.photoeditor.OnSaveBitmap;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
 
-public class MainActivity extends AppCompatActivity implements FilterListFragmentListener , EditImageFragmentListener {
+public class MainActivity extends AppCompatActivity implements FilterListFragmentListener, EditImageFragmentListener, BrushFragmentListener {
     public static String pictureName = "flash.jpg";
     public static final int PERMISSION_PICK_IMAGE =1000;
 
@@ -54,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
     CoordinatorLayout coordinatorLayout;
 
-    CardView btn_filters_list,btn_edit;
+    CardView btn_filters_list,btn_edit,btn_brush;
 
     Bitmap originalBitmap,filteredBitmap,finalBitmap;
 
@@ -73,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        //=====================init views and set actionbar=========================================//
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -86,6 +88,9 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         coordinatorLayout = findViewById(R.id.coordinator);
         btn_filters_list = findViewById(R.id.btn_filters_list);
         btn_edit = findViewById(R.id.btn_edit);
+        btn_brush = findViewById(R.id.btn_brush);
+
+        //=======================bottom cardview onclick============================================//
 
         btn_filters_list.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,17 +105,31 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         btn_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //獲得該fragment的單一實體
                 EditImageFragment editImageFragment = EditImageFragment.getInstance();
                 editImageFragment.setListener(MainActivity.this);
                 editImageFragment.show(getSupportFragmentManager(),editImageFragment.getTag());
             }
         });
 
-        loadImage();
-//        setUpViewPager(viewPager);
-//        tabLayout.setupWithViewPager(viewPager);
-    }
+        btn_brush.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                photoEditor.setBrushDrawingMode(true);
+                //獲得該fragment的單一實體
+                BrushFragment brushFragment = BrushFragment.getInstance();
+                //MainActivity.this 指的是最上面我們 implement過的BrushFragmentListener
+                //並且導入他的4個listener(onBrushSizeChanged,onBrushOpacityChanged.....)
+                brushFragment.setListener(MainActivity.this);
+                brushFragment.show(getSupportFragmentManager(),brushFragment.getTag());
+            }
+        });
+        //=======================first time load image into PhotoEditorView=========================//
+        loadImage();
+
+    }
+    //=======================first time load image into PhotoEditorView=========================//
     private void loadImage() {
         originalBitmap = BitmapUtils.getBitmapFromAssets(this,pictureName,300,300);
         filteredBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888,true);
@@ -119,20 +138,20 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         photoEditorView.getSource().setImageBitmap(originalBitmap);
     }
 
-    private void setUpViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        filterListFragment = new FilterListFragment();
-        filterListFragment.setListener(this);
-
-        editImageFragment = new EditImageFragment();
-        editImageFragment.setListener(this);
-
-        adapter.addFragment(editImageFragment,"edit");
-        adapter.addFragment(filterListFragment,"filters");
-
-        viewPager.setAdapter(adapter);
-    }
-
+//    private void setUpViewPager(ViewPager viewPager) {
+//        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+//        filterListFragment = new FilterListFragment();
+//        filterListFragment.setListener(this);
+//
+//        editImageFragment = new EditImageFragment();
+//        editImageFragment.setListener(this);
+//
+//        adapter.addFragment(editImageFragment,"edit");
+//        adapter.addFragment(filterListFragment,"filters");
+//
+//        viewPager.setAdapter(adapter);
+//    }
+    //=======================method in FilterListFragmentListener=========================//
     @Override
     public void onFilterSelected(Filter filter) {
         resetControl();
@@ -141,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         finalBitmap =filteredBitmap.copy(Bitmap.Config.ARGB_8888,true);
     }
 
+    //=======================reset the photo brightness, contrast,...=========================//
     private void resetControl() {
         if(editImageFragment!= null){
             editImageFragment.resetControls();
@@ -150,6 +170,8 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         saturationFinal=1.0f;
         constraintFinal=1.0f;
     }
+
+    //======================methods in EditImageFragmentListener===============================//
 
     @Override
     public void onBrightnessChanged(int brightness) {
@@ -192,12 +214,14 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
     }
 
+
+    //======================create options menu===============================//
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main,menu);
         return true;
     }
-
+    //======================options menu onItemSelected===============================//
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id=  item.getItemId();
@@ -212,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         return super.onOptionsItemSelected(item);
     }
 
-
+    //=============method to save image to gallery, triggered in options menu=======================//
     private void saveImageFromGalary() {
 
         Dexter.withActivity(this)
@@ -221,27 +245,37 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
                     @Override
                     public void onPermissionsChecked(MultiplePermissionsReport report) {
                         if(report.areAllPermissionsGranted()){
-                            try {
+                            photoEditor.saveAsBitmap(new OnSaveBitmap() {
+                                @Override
+                                public void onBitmapReady(Bitmap saveBitmap) {
+                                    try {
+                                        photoEditorView.getSource().setImageBitmap(saveBitmap);
+                                        final String path = BitmapUtils.insertImage(getContentResolver(),saveBitmap,System.currentTimeMillis()+"_profile.jpg",null);
 
-                                final String path = BitmapUtils.insertImage(getContentResolver(),finalBitmap,System.currentTimeMillis()+"_profile.jpg",null);
+                                        if (!TextUtils.isEmpty(path)){
+                                            Snackbar snackbar = Snackbar.make(coordinatorLayout,"image saved to gallary",Snackbar.LENGTH_SHORT)
+                                                    .setAction("open", new View.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(View v) {
+                                                            openImage(path);
+                                                        }
+                                                    });
+                                            snackbar.show();
+                                        }else{
+                                            Snackbar snackbar = Snackbar.make(coordinatorLayout,"unable to save image",Snackbar.LENGTH_SHORT);
+                                            snackbar.show();
+                                        }
 
-                                if (!TextUtils.isEmpty(path)){
-                                    Snackbar snackbar = Snackbar.make(coordinatorLayout,"image saved to gallary",Snackbar.LENGTH_SHORT)
-                                            .setAction("open", new View.OnClickListener() {
-                                                @Override
-                                                public void onClick(View v) {
-                                                    openImage(path);
-                                                }
-                                            });
-                                    snackbar.show();
-                                }else{
-                                    Snackbar snackbar = Snackbar.make(coordinatorLayout,"unable to save image",Snackbar.LENGTH_SHORT);
-                                    snackbar.show();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
 
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                                @Override
+                                public void onFailure(Exception e) {
+
+                                }
+                            });
                         }else {
                             Toast.makeText(MainActivity.this, "permission denied", Toast.LENGTH_SHORT).show();
                         }
@@ -257,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
 
     }
-
+    //====================called by saveImageFromGallery to open phones gallery=====================//
     private void openImage(String path) {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
@@ -265,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         startActivity(intent);
     }
 
+    //=============method to open image to gallery, triggered in options menu=======================//
     private void openImageFromGalary() {
         Dexter.withActivity(this)
                 .withPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -287,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
                 }).check();
 
     }
-
+    //====================triggered by openImageFromGalary(startActivityForResult) to open phones gallery=====================//
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
@@ -309,6 +344,31 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
             //render selected image thumbnail
             filterListFragment.displayThumbnail(originalBitmap);
+        }
+    }
+
+    //===================methods from BrushFragmentListener =======================================//
+    @Override
+    public void onBrushSizeChanged(float size) {
+        photoEditor.setBrushSize(size);
+    }
+
+    @Override
+    public void onBrushOpacityChanged(int opacity) {
+        photoEditor.setOpacity(opacity);
+    }
+
+    @Override
+    public void onBrushColorChangeListener(int color) {
+        photoEditor.setBrushColor(color);
+    }
+
+    @Override
+    public void onBrushStateChangeListener(boolean isEraser) {
+        if (isEraser){
+            photoEditor.brushEraser();
+        }else{
+            photoEditor.setBrushDrawingMode(true);
         }
     }
 }
