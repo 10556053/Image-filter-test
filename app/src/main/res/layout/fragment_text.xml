@@ -12,7 +12,7 @@
         style="@style/EditText"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/recycler_text_color"
+        android:layout_above="@id/recycler_font"
         android:background="@null"
         android:gravity="center"
         android:inputType="textMultiLine"
@@ -20,14 +20,24 @@
         android:paddingBottom="10dp"
         android:textSize="30sp" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_text_color"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:layout_alignParentBottom="true">
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_font"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/recycler_text_color"
+        android:layout_alignParentBottom="false"
+        android:layout_marginBottom="16dp">
 
-        </androidx.recyclerview.widget.RecyclerView>
+    </androidx.recyclerview.widget.RecyclerView>
 
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_text_color"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true">
+
+    </androidx.recyclerview.widget.RecyclerView>
 
     <Button
         android:id="@+id/btn_add_text"

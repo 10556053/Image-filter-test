@@ -452,12 +452,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         emojiFragment.dismiss();
     }
 
-    @Override
-    public void onAddTextButtonClicked(String text, int colorSelected) {
-        //從契約中取出字及顏色碼
-        photoEditor.addText(text,colorSelected);
-        textFragment.dismiss();
-    }
+
 
     @Override
     public void onStickerSelected(int sticker) {
@@ -471,4 +466,9 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
     }
 
 
+    @Override
+    public void onAddTextButtonClicked(Typeface typeface, String text, int colorSelected) {
+        photoEditor.addText(typeface,text,colorSelected);
+        textFragment.dismiss();
+    }
 }

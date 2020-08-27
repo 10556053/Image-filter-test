@@ -1,6 +1,7 @@
 package com.example.cameratest;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 
 import androidx.fragment.app.DialogFragment;
@@ -17,18 +18,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.cameratest.Adapter.ColorAdapter;
+import com.example.cameratest.Adapter.FontAdapter;
 import com.example.cameratest.Interface.AddTextFragmentListener;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 //可以復用colorAdapter
-public class TextFragment extends DialogFragment implements ColorAdapter.ColorAdapterListener {
+public class TextFragment extends DialogFragment implements ColorAdapter.ColorAdapterListener, FontAdapter.FontAdapterClickListener {
 
     EditText edt_add_text;
     Button btn_add_text;
     int colorSelected = Color.parseColor("#000000");//預設顏色黑色
-    RecyclerView recycler_text_color;
+    RecyclerView recycler_text_color ,recycler_font;
     AddTextFragmentListener listener;
+    Typeface typeface = Typeface.DEFAULT;
     static TextFragment instance;
+
 
     //***要加static 別的class才拿的到***
     public static TextFragment getInstance() {
@@ -63,18 +67,26 @@ public class TextFragment extends DialogFragment implements ColorAdapter.ColorAd
         edt_add_text = itemView.findViewById(R.id.edt_add_text);
         btn_add_text = itemView.findViewById(R.id.btn_add_text);
         recycler_text_color = itemView.findViewById(R.id.recycler_text_color);
+        recycler_font = itemView.findViewById(R.id.recycler_font);
+
 
         recycler_text_color.setHasFixedSize(true);
         recycler_text_color.setLayoutManager(new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false));
 
+        recycler_font.setHasFixedSize(true);
+        recycler_font.setLayoutManager(new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false));
+
         ColorAdapter colorAdapter= new ColorAdapter(getContext(),this);
         recycler_text_color.setAdapter(colorAdapter);
+
+        FontAdapter fontAdapter = new FontAdapter(getContext(),this);
+        recycler_font.setAdapter(fontAdapter);
 
         btn_add_text.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //將得到的text及顏色碼放入契約中
-                listener.onAddTextButtonClicked(edt_add_text.getText().toString(),colorSelected);
+                listener.onAddTextButtonClicked(typeface,edt_add_text.getText().toString(),colorSelected);
                 Toast.makeText(getContext(), "clicked", Toast.LENGTH_SHORT).show();
             }
         });
@@ -87,5 +99,10 @@ public class TextFragment extends DialogFragment implements ColorAdapter.ColorAd
     public void onColorSelected(int color) {
         edt_add_text.setTextColor(color);
         colorSelected = color;
+    }
+
+    @Override
+    public void onFontItemSelected(String fontName) {
+        typeface = Typeface.createFromAsset(getContext().getAssets(),new StringBuilder("fonts/").append(fontName).toString());
     }
 }

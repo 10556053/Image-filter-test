@@ -1,5 +1,7 @@
 package com.example.cameratest.Interface;
 
+import android.graphics.Typeface;
+
 public interface AddTextFragmentListener {
-    void onAddTextButtonClicked(String text,int colorSelected);
+    void onAddTextButtonClicked(Typeface typeface, String text, int colorSelected);
 }
