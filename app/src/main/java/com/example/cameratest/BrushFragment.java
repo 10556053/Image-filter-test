@@ -69,7 +69,7 @@ public class BrushFragment extends BottomSheetDialogFragment implements ColorAda
         recycler_color.setHasFixedSize(true);
         recycler_color.setLayoutManager(new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,false));
 
-        colorAdapter= new ColorAdapter(getContext(),getColorList(),this);
+        colorAdapter= new ColorAdapter(getContext(),this);
         recycler_color.setAdapter(colorAdapter);
         //events
         seekBar_opacity_size.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -117,25 +117,7 @@ public class BrushFragment extends BottomSheetDialogFragment implements ColorAda
         return itemView;
     }
 
-    private List<Integer> getColorList() {
-        List<Integer> colorList=new ArrayList<>();
 
-        colorList.add(Color.parseColor("#f1f1ea"));
-        colorList.add(Color.parseColor("#faf6ea"));
-        colorList.add(Color.parseColor("#e53c67"));
-        colorList.add(Color.parseColor("#a2ca4a"));
-        colorList.add(Color.parseColor("#ffbbff"));
-        colorList.add(Color.parseColor("#ff3267"));
-        colorList.add(Color.parseColor("#007bae"));
-        colorList.add(Color.parseColor("#bdcf46"));
-        colorList.add(Color.parseColor("#f4d4f4"));
-        colorList.add(Color.parseColor("#e9a2e0"));
-        colorList.add(Color.parseColor("#ff7f00"));
-        colorList.add(Color.parseColor("#b5a8ea"));
-
-
-        return colorList;
-    }
 
     //implemented from ColorAdapter
     //get color (int) from onColorSelected method

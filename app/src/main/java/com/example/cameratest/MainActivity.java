@@ -17,16 +17,20 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.cameratest.Adapter.ViewPagerAdapter;
+
+import com.example.cameratest.Interface.AddTextFragmentListener;
 import com.example.cameratest.Interface.BrushFragmentListener;
 import com.example.cameratest.Interface.EditImageFragmentListener;
 import com.example.cameratest.Interface.EmojiFragmentListener;
 import com.example.cameratest.Interface.FilterListFragmentListener;
 import com.example.cameratest.Utils.BitmapUtils;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.karumi.dexter.Dexter;
@@ -47,7 +51,7 @@ import ja.burhanrashid52.photoeditor.OnSaveBitmap;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
 
-public class MainActivity extends AppCompatActivity implements FilterListFragmentListener, EditImageFragmentListener, BrushFragmentListener , EmojiFragmentListener {
+public class MainActivity extends AppCompatActivity implements FilterListFragmentListener, EditImageFragmentListener, BrushFragmentListener , EmojiFragmentListener, AddTextFragmentListener {
     public static String pictureName = "flash.jpg";
     public static final int PERMISSION_PICK_IMAGE =1000;
 
@@ -58,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
     CoordinatorLayout coordinatorLayout;
 
-    CardView btn_filters_list,btn_edit,btn_brush,btn_emoji;
+    CardView btn_filters_list,btn_edit,btn_brush,btn_emoji,btn_text;
 
     ImageView btn_undo,btn_redo;
 
@@ -72,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
     float constraintFinal = 1.0f;
 
     EmojiFragment emojiFragment;
+    TextFragment textFragment;
 
     static {
         System.loadLibrary("NativeImageProcessor");
@@ -99,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         btn_edit = findViewById(R.id.btn_edit);
         btn_brush = findViewById(R.id.btn_brush);
         btn_emoji = findViewById(R.id.btn_emoji);
+        btn_text = findViewById(R.id.btn_text);
 
         btn_undo = findViewById(R.id.btn_undo);
         btn_redo = findViewById(R.id.btn_redo);
@@ -145,6 +151,18 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
                 //emojiFragment等待MainActivity實作EmojiFragmentListener
                 emojiFragment.setListener(MainActivity.this);
                 emojiFragment.show(getSupportFragmentManager(),emojiFragment.getTag());
+            }
+        });
+
+        btn_text.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                textFragment = TextFragment.getInstance();
+                //有了這行，MainActivity才算是得到契約
+                //並且MainActivity會去實作該契約的方法
+                textFragment.setListener(MainActivity.this);
+                textFragment.show(getSupportFragmentManager(),textFragment.getTag());
+
             }
         });
 
@@ -286,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
                                 @Override
                                 public void onBitmapReady(Bitmap saveBitmap) {
                                     try {
-                                        photoEditorView.getSource().setImageBitmap(saveBitmap);
+                                        //photoEditorView.getSource().setImageBitmap(saveBitmap);
                                         final String path = BitmapUtils.insertImage(getContentResolver(),saveBitmap,System.currentTimeMillis()+"_profile.jpg",null);
 
                                         if (!TextUtils.isEmpty(path)){
@@ -411,7 +429,15 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
     //===================methods from EmojiFragmentListener =======================================//
     @Override
     public void onEmojiSelected(String emoji) {
+        //從契約中取出emoji
         photoEditor.addEmoji(emoji);
         emojiFragment.dismiss();
+    }
+
+    @Override
+    public void onAddTextButtonClicked(String text, int colorSelected) {
+        //從契約中取出字及顏色碼
+        photoEditor.addText(text,colorSelected);
+        textFragment.dismiss();
     }
 }

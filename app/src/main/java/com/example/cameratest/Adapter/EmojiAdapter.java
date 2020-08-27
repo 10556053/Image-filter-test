@@ -73,8 +73,7 @@ public class EmojiAdapter extends RecyclerView.Adapter<EmojiAdapter.EmojiViewHol
     //fragment也是用同樣的方法互相傳遞參數(frag to frag / frag to activity)
     //締結一個契約叫做EmojiAdapterListener
     public interface EmojiAdapterListener{
-        //當一個emoji被選擇時...(do things)
-        //獲得一個String emoji為參數
+        //當實作我這個契約的class呼叫 onEmojiItemSelected() 方法時，得到一個 String emoji
         void onEmojiItemSelected(String emoji);
     }
 }

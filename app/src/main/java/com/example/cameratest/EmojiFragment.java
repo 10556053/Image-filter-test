@@ -51,6 +51,8 @@ public class EmojiFragment extends BottomSheetDialogFragment implements EmojiAda
         // Inflate the layout for this fragment
         View itemView =  inflater.inflate(R.layout.fragment_emoji, container, false);
         recycler_emoji = itemView.findViewById(R.id.recycler_emoji);
+
+
         recycler_emoji.setHasFixedSize(false);
         recycler_emoji.setLayoutManager(new GridLayoutManager(getActivity(),5));
         //此處的this是上面implements的EmojiAdapterListener
