@@ -18,7 +18,6 @@ public class EmojiAdapter extends RecyclerView.Adapter<EmojiAdapter.EmojiViewHol
 
     Context context;
     List<String>emojiList;
-
     //讓別人可以取得這個EmojiAdapterListener契約
     EmojiAdapterListener listener;
 

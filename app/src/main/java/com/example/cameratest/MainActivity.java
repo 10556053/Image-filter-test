@@ -8,9 +8,13 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -28,6 +32,7 @@ import com.example.cameratest.Interface.BrushFragmentListener;
 import com.example.cameratest.Interface.EditImageFragmentListener;
 import com.example.cameratest.Interface.EmojiFragmentListener;
 import com.example.cameratest.Interface.FilterListFragmentListener;
+import com.example.cameratest.Interface.StickerFragmentListener;
 import com.example.cameratest.Utils.BitmapUtils;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -51,7 +56,7 @@ import ja.burhanrashid52.photoeditor.OnSaveBitmap;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
 
-public class MainActivity extends AppCompatActivity implements FilterListFragmentListener, EditImageFragmentListener, BrushFragmentListener , EmojiFragmentListener, AddTextFragmentListener {
+public class MainActivity extends AppCompatActivity implements FilterListFragmentListener, EditImageFragmentListener, BrushFragmentListener , EmojiFragmentListener, AddTextFragmentListener, StickerFragmentListener {
     public static String pictureName = "flash.jpg";
     public static final int PERMISSION_PICK_IMAGE =1000;
 
@@ -62,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
     CoordinatorLayout coordinatorLayout;
 
-    CardView btn_filters_list,btn_edit,btn_brush,btn_emoji,btn_text;
+    CardView btn_filters_list,btn_edit,btn_brush,btn_emoji,btn_text,btn_sticker;
 
     ImageView btn_undo,btn_redo;
 
@@ -70,6 +75,9 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
     FilterListFragment filterListFragment;
     EditImageFragment editImageFragment;
+    StickerFragment stickerFragment;
+
+    Context context;
 
     int brightnessFinal = 0;
     float saturationFinal = 1.0f;
@@ -105,9 +113,12 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         btn_brush = findViewById(R.id.btn_brush);
         btn_emoji = findViewById(R.id.btn_emoji);
         btn_text = findViewById(R.id.btn_text);
+        btn_sticker = findViewById(R.id.btn_sticker);
 
         btn_undo = findViewById(R.id.btn_undo);
         btn_redo = findViewById(R.id.btn_redo);
+
+        context = getApplicationContext();
 
         //=======================bottom cardview onclick============================================//
 
@@ -165,7 +176,14 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
             }
         });
-
+        btn_sticker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stickerFragment = StickerFragment.getInstance();
+                stickerFragment.setListener(MainActivity.this);
+                stickerFragment.show(getSupportFragmentManager(),stickerFragment.getTag());
+            }
+        });
 
         //=======================first time load image into PhotoEditorView=========================//
         loadImage();
@@ -440,4 +458,17 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         photoEditor.addText(text,colorSelected);
         textFragment.dismiss();
     }
+
+    @Override
+    public void onStickerSelected(int sticker) {
+
+        Drawable d = context.getResources().getDrawable(sticker);
+        Bitmap bitmap = BitmapUtils.drawableToBitmap(d);
+        photoEditor.addImage(bitmap);
+
+
+        stickerFragment.dismiss();
+    }
+
+
 }
