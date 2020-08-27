@@ -125,10 +125,16 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         btn_filters_list.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //create singleton object
-                FilterListFragment filterListFragment = FilterListFragment.getInstance();
-                filterListFragment.setListener(MainActivity.this);
-                filterListFragment.show(getSupportFragmentManager(),filterListFragment.getTag());
+                if(filterListFragment!= null){
+                    //create singleton object
+
+                    filterListFragment.show(getSupportFragmentManager(),filterListFragment.getTag());
+                }else{
+                    //create singleton object
+                    FilterListFragment filterListFragment = FilterListFragment.getInstance(null);
+                    filterListFragment.setListener(MainActivity.this);
+                    filterListFragment.show(getSupportFragmentManager(),filterListFragment.getTag());
+                }
             }
         });
 
@@ -224,69 +230,18 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 //
 //        viewPager.setAdapter(adapter);
 //    }
-    //=======================method in FilterListFragmentListener=========================//
-    @Override
-    public void onFilterSelected(Filter filter) {
-        resetControl();
-        filteredBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888,true);
-        photoEditorView.getSource().setImageBitmap(filter.processFilter(filteredBitmap));
-        finalBitmap =filteredBitmap.copy(Bitmap.Config.ARGB_8888,true);
-    }
 
-    //=======================reset the photo brightness, contrast,...=========================//
-    private void resetControl() {
-        if(editImageFragment!= null){
-            editImageFragment.resetControls();
-        }
 
-        brightnessFinal=0;
-        saturationFinal=1.0f;
-        constraintFinal=1.0f;
-    }
-
-    //======================methods in EditImageFragmentListener===============================//
-
-    @Override
-    public void onBrightnessChanged(int brightness) {
-        brightnessFinal = brightness;
-        Filter myFilter = new Filter();
-        myFilter.addSubFilter(new BrightnessSubFilter(brightness));
-        photoEditorView.getSource().setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
-    }
-
-    @Override
-    public void onSaturationChanged(float saturation) {
-        saturationFinal = saturation;
-        Filter myFilter = new Filter();
-        myFilter.addSubFilter(new SaturationSubfilter(saturation));
-        photoEditorView.getSource().setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
-    }
-
-    @Override
-    public void onConstraintChanged(float constraint) {
-        constraintFinal = constraint;
-        Filter myFilter = new Filter();
-        myFilter.addSubFilter(new ContrastSubFilter(constraint));
-        photoEditorView.getSource().setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
-    }
-
-    @Override
-    public void onEditStarted() {
-
-    }
-
-    @Override
-    public void onEditCompleted() {
-        Bitmap bitmap = filteredBitmap.copy(Bitmap.Config.ARGB_8888,true);
-        Filter myFilter = new Filter();
-        myFilter.addSubFilter(new BrightnessSubFilter(brightnessFinal));
-        myFilter.addSubFilter(new SaturationSubfilter(saturationFinal));
-        myFilter.addSubFilter(new ContrastSubFilter(constraintFinal));
-
-        finalBitmap = myFilter.processFilter(bitmap);
-
-    }
-
+//    //=======================reset the photo brightness, contrast,...=========================//
+//    private void resetControl() {
+//        if(editImageFragment!= null){
+//            editImageFragment.resetControls();
+//        }
+//
+//        brightnessFinal=0;
+//        saturationFinal=1.0f;
+//        constraintFinal=1.0f;
+//    }
 
     //======================create options menu===============================//
     @Override
@@ -416,9 +371,69 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
             bitmap.recycle();
 
             //render selected image thumbnail
-            filterListFragment.displayThumbnail(originalBitmap);
+//            filterListFragment.displayThumbnail(originalBitmap);
+            //fix crash
+            filterListFragment = FilterListFragment.getInstance(originalBitmap);
+            filterListFragment.setListener(this);
+
         }
     }
+
+    //======================= INTERFACE METHODS===========================================//
+
+    //=======================method in FilterListFragmentListener=========================//
+    @Override
+    public void onFilterSelected(Filter filter) {
+        //fix crash
+        //resetControl();
+        filteredBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888,true);
+        photoEditorView.getSource().setImageBitmap(filter.processFilter(filteredBitmap));
+        finalBitmap =filteredBitmap.copy(Bitmap.Config.ARGB_8888,true);
+    }
+    //======================methods in EditImageFragmentListener===============================//
+
+    @Override
+    public void onBrightnessChanged(int brightness) {
+        brightnessFinal = brightness;
+        Filter myFilter = new Filter();
+        myFilter.addSubFilter(new BrightnessSubFilter(brightness));
+        photoEditorView.getSource().setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
+    }
+
+    @Override
+    public void onSaturationChanged(float saturation) {
+        saturationFinal = saturation;
+        Filter myFilter = new Filter();
+        myFilter.addSubFilter(new SaturationSubfilter(saturation));
+        photoEditorView.getSource().setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
+    }
+
+    @Override
+    public void onConstraintChanged(float constraint) {
+        constraintFinal = constraint;
+        Filter myFilter = new Filter();
+        myFilter.addSubFilter(new ContrastSubFilter(constraint));
+        photoEditorView.getSource().setImageBitmap(myFilter.processFilter(finalBitmap.copy(Bitmap.Config.ARGB_8888,true)));
+    }
+
+    @Override
+    public void onEditStarted() {
+
+    }
+
+    @Override
+    public void onEditCompleted() {
+        Bitmap bitmap = filteredBitmap.copy(Bitmap.Config.ARGB_8888,true);
+        Filter myFilter = new Filter();
+        myFilter.addSubFilter(new BrightnessSubFilter(brightnessFinal));
+        myFilter.addSubFilter(new SaturationSubfilter(saturationFinal));
+        myFilter.addSubFilter(new ContrastSubFilter(constraintFinal));
+
+        finalBitmap = myFilter.processFilter(bitmap);
+
+    }
+
+
 
     //===================methods from BrushFragmentListener =======================================//
     @Override

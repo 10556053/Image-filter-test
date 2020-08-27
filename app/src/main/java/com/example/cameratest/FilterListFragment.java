@@ -33,11 +33,18 @@ public class FilterListFragment extends BottomSheetDialogFragment implements Fil
     List<ThumbnailItem> thumbnailItems;
     FilterListFragmentListener listener;
 
+    //fix crash
+    static Bitmap bitmap;
+
     static FilterListFragment instance;
 
-    public static FilterListFragment getInstance() {
+    public static FilterListFragment getInstance(Bitmap bitmapSaved) {
+
+        bitmap = bitmapSaved;
+
         if (instance ==null){
             instance = new FilterListFragment();
+
         }
         return instance;
     }
@@ -72,7 +79,7 @@ public class FilterListFragment extends BottomSheetDialogFragment implements Fil
         recyclerView.addItemDecoration(new SpacesItemDecoration(space));
         recyclerView.setAdapter(adapter);
         
-        displayThumbnail(null);
+        displayThumbnail(bitmap);
 
         return  itemView;
     }
