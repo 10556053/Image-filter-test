@@ -14,7 +14,7 @@
     <ja.burhanrashid52.photoeditor.PhotoEditorView
         android:id="@+id/image_preview"
         android:layout_width="match_parent"
-        android:layout_height="500dp"
+        android:layout_height="485dp"
 
         >
 
@@ -24,19 +24,32 @@
         android:id="@+id/btn_undo"
         android:layout_width="50dp"
         android:layout_height="60dp"
-        android:src="@drawable/ic_baseline_undo_24"
-        android:layout_above="@id/scroll_view"
+        android:layout_above="@id/recycler_view"
         android:layout_toStartOf="@id/btn_redo"
-        />
+        android:src="@drawable/ic_baseline_undo_24" />
 
     <ImageView
         android:id="@+id/btn_redo"
         android:layout_width="50dp"
         android:layout_height="60dp"
-        android:layout_above="@id/scroll_view"
-        android:layout_alignEnd="@+id/scroll_view"
+        android:layout_above="@id/recycler_view"
 
+        android:layout_alignEnd="@+id/scroll_view"
         android:src="@drawable/ic_baseline_redo_24" />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/scroll_view"
+            android:layout_below="@+id/image_preview"
+            android:layout_gravity="center_vertical"
+            android:clipChildren="false"
+            android:padding="4dp"
+            android:scrollbars="none" />
+
+
 
     <HorizontalScrollView
         android:id="@+id/scroll_view"
@@ -53,34 +66,34 @@
             android:padding="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-            <androidx.cardview.widget.CardView
-                android:id="@+id/btn_filters_list"
-                android:padding="16dp"
-                app:cardBackgroundColor="@color/card_background_color"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                >
-                <LinearLayout
-                    android:layout_gravity="center_horizontal|center_vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/ic_baseline_image_24"
-                        android:layout_gravity="center_horizontal|center_vertical"/>
-                    <TextView
-                        android:textColor="#ffffff"
-                        android:text="filters"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        ></TextView>
-                </LinearLayout>
+<!--            <androidx.cardview.widget.CardView-->
+<!--                android:id="@+id/btn_filters_list"-->
+<!--                android:padding="16dp"-->
+<!--                app:cardBackgroundColor="@color/card_background_color"-->
+<!--                android:layout_width="80dp"-->
+<!--                android:layout_height="80dp"-->
+<!--                >-->
+<!--                <LinearLayout-->
+<!--                    android:layout_gravity="center_horizontal|center_vertical"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:orientation="vertical">-->
+<!--                    <ImageView-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:src="@drawable/ic_baseline_image_24"-->
+<!--                        android:layout_gravity="center_horizontal|center_vertical"/>-->
+<!--                    <TextView-->
+<!--                        android:textColor="#ffffff"-->
+<!--                        android:text="filters"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:textStyle="bold"-->
+<!--                        android:textSize="18sp"-->
+<!--                        ></TextView>-->
+<!--                </LinearLayout>-->
 
-            </androidx.cardview.widget.CardView>
+<!--            </androidx.cardview.widget.CardView>-->
             <androidx.cardview.widget.CardView
                 android:id="@+id/btn_edit"
                 android:padding="16dp"

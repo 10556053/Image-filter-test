@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.Context;
@@ -16,16 +19,19 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.cameratest.Adapter.ThumbnailAdapter;
 import com.example.cameratest.Fragments.BrushFragment;
 import com.example.cameratest.Fragments.EditImageFragment;
 import com.example.cameratest.Fragments.EmojiFragment;
-import com.example.cameratest.Fragments.FilterListFragment;
+//import com.example.cameratest.Fragments.FilterListFragment;
 import com.example.cameratest.Fragments.StickerFragment;
 import com.example.cameratest.Fragments.TextFragment;
 import com.example.cameratest.Interface.AddTextFragmentListener;
@@ -35,6 +41,7 @@ import com.example.cameratest.Interface.EmojiFragmentListener;
 import com.example.cameratest.Interface.FilterListFragmentListener;
 import com.example.cameratest.Interface.StickerFragmentListener;
 import com.example.cameratest.Utils.BitmapUtils;
+import com.example.cameratest.Utils.SpacesItemDecoration;
 import com.google.android.material.snackbar.Snackbar;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -42,13 +49,19 @@ import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.yalantis.ucrop.UCrop;
+import com.zomato.photofilters.FilterPack;
 import com.zomato.photofilters.imageprocessors.Filter;
 import com.zomato.photofilters.imageprocessors.subfilters.BrightnessSubFilter;
 import com.zomato.photofilters.imageprocessors.subfilters.ContrastSubFilter;
 import com.zomato.photofilters.imageprocessors.subfilters.SaturationSubfilter;
+import com.zomato.photofilters.utils.ThumbnailItem;
+import com.zomato.photofilters.utils.ThumbnailsManager;
+
+import net.cachapa.expandablelayout.ExpandableLayout;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,8 +76,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
     PhotoEditorView photoEditorView;
     PhotoEditor photoEditor;
-//    TabLayout tabLayout;
-//    ViewPager viewPager;
+
 
     CoordinatorLayout coordinatorLayout;
 
@@ -74,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
     Bitmap originalBitmap,filteredBitmap,finalBitmap;
 
-    FilterListFragment filterListFragment;
+//    FilterListFragment filterListFragment;
     EditImageFragment editImageFragment;
     StickerFragment stickerFragment;
 
@@ -92,6 +104,13 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
     static {
         System.loadLibrary("NativeImageProcessor");
     }
+
+    //===========================================//
+    RecyclerView recyclerView;
+    ThumbnailAdapter adapter;
+    List<ThumbnailItem> thumbnailItems;
+
+    //==========================================//
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 //        tabLayout = findViewById(R.id.tabs);
 //        viewPager = findViewById(R.id.viewpager);
         coordinatorLayout = findViewById(R.id.coordinator);
-        btn_filters_list = findViewById(R.id.btn_filters_list);
+//        btn_filters_list = findViewById(R.id.btn_filters_list);
         btn_edit = findViewById(R.id.btn_edit);
         btn_brush = findViewById(R.id.btn_brush);
         btn_emoji = findViewById(R.id.btn_emoji);
@@ -124,22 +143,39 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
         context = getApplicationContext();
 
+        //=======================filter recyclerview================================================//
+
+        recyclerView = findViewById(R.id.recycler_view);
+
+
+        thumbnailItems = new ArrayList<>();
+        adapter = new ThumbnailAdapter(thumbnailItems,this,getApplicationContext());
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        int space = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,8,getResources().getDisplayMetrics());
+        recyclerView.addItemDecoration(new SpacesItemDecoration(space));
+        recyclerView.setAdapter(adapter);
+
+        displayThumbnail(originalBitmap);
+
+
         //=======================bottom cardview onclick============================================//
 
-        btn_filters_list.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(filterListFragment!= null){
-                    //create singleton object
-                    filterListFragment.show(getSupportFragmentManager(),filterListFragment.getTag());
-                }else{
-                    //create singleton object
-                    FilterListFragment filterListFragment = FilterListFragment.getInstance(null);
-                    filterListFragment.setListener(MainActivity.this);
-                    filterListFragment.show(getSupportFragmentManager(),filterListFragment.getTag());
-                }
-            }
-        });
+//        btn_filters_list.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if(filterListFragment!= null){
+//                    //create singleton object
+//                    filterListFragment.show(getSupportFragmentManager(),filterListFragment.getTag());
+//                }else{
+//                    //create singleton object
+//                    FilterListFragment filterListFragment = FilterListFragment.getInstance(null);
+//                    filterListFragment.setListener(MainActivity.this);
+//                    filterListFragment.show(getSupportFragmentManager(),filterListFragment.getTag());
+//                }
+//            }
+//        });
 
         btn_edit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -394,8 +430,9 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
                 //render selected image thumbnail
                 //filterListFragment.displayThumbnail(originalBitmap);
                 //fix crash
-                filterListFragment = FilterListFragment.getInstance(originalBitmap);
-                filterListFragment.setListener(this);
+//                filterListFragment = FilterListFragment.getInstance(originalBitmap);
+//                filterListFragment.setListener(this);
+                displayThumbnail(originalBitmap);
 
             }else if (requestCode ==UCrop.REQUEST_CROP){
                 handleCropRequest(data);
@@ -484,6 +521,54 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
 
     }
 
+    public void displayThumbnail(final Bitmap bitmap) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                Bitmap thumbImg;
+                if(bitmap==null){
+                    thumbImg = BitmapUtils.getBitmapFromAssets(getApplicationContext(), MainActivity.pictureName , 100,100);
+                }else{
+                    thumbImg = Bitmap.createScaledBitmap(bitmap,100,100,false);
+                }
+
+                if (thumbImg ==null) {
+                    return;
+                }
+
+
+                ThumbnailsManager.clearThumbs();
+                thumbnailItems.clear();
+                //add normal bitmap first
+                ThumbnailItem thumbnailItem = new ThumbnailItem();
+                thumbnailItem.image = thumbImg;
+                thumbnailItem.filterName = "Normal";
+
+                ThumbnailsManager.addThumb(thumbnailItem);
+
+                List<Filter> filters = FilterPack.getFilterPack(getApplicationContext());
+
+                for(Filter filter: filters){
+                    ThumbnailItem tI = new ThumbnailItem();
+                    tI.image = thumbImg;
+                    tI.filter = filter;
+                    tI.filterName = filter.getName();
+
+                    ThumbnailsManager.addThumb(tI);
+                }
+                thumbnailItems.addAll(ThumbnailsManager.processThumbs(getApplicationContext()));
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        };
+        new Thread( r).start();
+    }
+
 
 
     //===================methods from BrushFragmentListener =======================================//
@@ -537,4 +622,6 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
         photoEditor.addText(typeface,text,colorSelected);
         textFragment.dismiss();
     }
+
+
 }
