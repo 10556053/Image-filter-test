@@ -5,13 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -21,12 +19,15 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-
+import com.example.cameratest.Fragments.BrushFragment;
+import com.example.cameratest.Fragments.EditImageFragment;
+import com.example.cameratest.Fragments.EmojiFragment;
+import com.example.cameratest.Fragments.FilterListFragment;
+import com.example.cameratest.Fragments.StickerFragment;
+import com.example.cameratest.Fragments.TextFragment;
 import com.example.cameratest.Interface.AddTextFragmentListener;
 import com.example.cameratest.Interface.BrushFragmentListener;
 import com.example.cameratest.Interface.EditImageFragmentListener;
@@ -34,12 +35,8 @@ import com.example.cameratest.Interface.EmojiFragmentListener;
 import com.example.cameratest.Interface.FilterListFragmentListener;
 import com.example.cameratest.Interface.StickerFragmentListener;
 import com.example.cameratest.Utils.BitmapUtils;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.tabs.TabLayout;
 import com.karumi.dexter.Dexter;
-import com.karumi.dexter.DexterBuilder;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
@@ -134,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements FilterListFragmen
             public void onClick(View v) {
                 if(filterListFragment!= null){
                     //create singleton object
-
                     filterListFragment.show(getSupportFragmentManager(),filterListFragment.getTag());
                 }else{
                     //create singleton object
